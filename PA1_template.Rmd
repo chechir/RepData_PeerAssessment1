@@ -13,7 +13,9 @@ library(ggplot2)
 Sys.setlocale("LC_TIME", "English") #windows
 ```
 
+
 ## Loading and preprocessing the data
+
 Here we load the data from the compressed file with the help of the read_csv function:
 ```{r echo=TRUE}
 data <- read_csv("activity.zip", col_types=list(
@@ -21,6 +23,7 @@ data <- read_csv("activity.zip", col_types=list(
   date = col_date(),
   interval = col_integer()))
 ```
+
 
 And here we look at the data loaded
 ```{r echo=TRUE}
@@ -32,11 +35,11 @@ summary(data)
 
 Since we would like to look the data in a daily basis, first we calculate the total steps per day and then calculate the mean for those totals:
 
-
 Here is an histogram of the total number of steps taken each day:
 ```{r echo=TRUE}
 hist(tapply(data$steps, data$date, sum))
 ```
+
 
 Also, we summarize the median and the mean, considering only the days that didn't have NA values:
 ```{r echo=TRUE}
@@ -45,30 +48,32 @@ cat("Median of the total number of steps taken per day:", median(tapply(data$ste
 
 ```
 
-## What is the average daily activity pattern?
-Time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
+## What is the average daily activity pattern?
+
+In the next section, we will build a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 ```{r echo=TRUE}
 tmp=dplyr::group_by(data, interval) %>% dplyr::summarize(meanSteps=mean(steps, na.rm=T))
 ggplot(tmp, aes(x = interval, y = meanSteps)) + 
     geom_line() 
 ```
 
-Here we calculate which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps:
 
+Also, we calculate which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps:
 ```{r echo=TRUE}
 cat("Interval  :", tmp$interval[which.max(tmp$meanSteps)])
 ```
+
 
 ## Imputing missing values
 
 Note that there are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
 Here we calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)
-
 ```{r echo=TRUE}
 sum(is.na(data$steps))
 ```
+
 
 We will impute those NA values using the median for the 5-minute interval, and then create a new dataset that is equal to the original dataset but with the missing data filled in:
 ```{r echo=TRUE}
@@ -77,6 +82,7 @@ dataImp$steps=ifelse(is.na(dataImp$steps), dataImp$meanSteps, dataImp$steps)
 dataImp=dataImp[1:3]
 ```
 
+
 Now, we make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day.
 
 Histogram for the imputed data:
@@ -84,13 +90,16 @@ Histogram for the imputed data:
 hist(tapply(dataImp$steps, dataImp$date, sum))
 ```
 
+
 Mean and median of imputed data:
 ```{r echo=TRUE}
 cat("Mean of the total number of steps taken per day:", mean(tapply(dataImp$steps, data$date, sum)))
 cat("Median of the total number of steps taken per day:", median(tapply(dataImp$steps, data$date, sum)))
 ```
 
+
 We can see above that the histogram and total values don't difer significatly from the non imputed data
+
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -101,8 +110,7 @@ dataImp$week=ifelse(dataImp$wday %in% c(6,0), "weekend", "weekday")
 ```
 
 
-Finally, we make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis)
-
+Finally, we make a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken (y-axis), averaged across all weekday days or weekend days.
 ```{r echo=TRUE}
 tmp=dplyr::group_by(dataImp, week, interval) %>% dplyr::summarize(meanSteps=mean(steps))
 ggplot(tmp, aes(x = interval, y = meanSteps)) + 
